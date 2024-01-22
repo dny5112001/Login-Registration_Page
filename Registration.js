@@ -1,6 +1,7 @@
 import {
   Image,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -9,12 +10,13 @@ import {
 } from 'react-native';
 import React, {useState} from 'react';
 import firestore from '@react-native-firebase/firestore';
-import {Platform} from 'react-native';
 
 import auth from '@react-native-firebase/auth';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {Dropdown} from 'react-native-element-dropdown';
 
 import storage from '@react-native-firebase/storage';
 import DocumentPicker from 'react-native-document-picker';
@@ -22,12 +24,15 @@ import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 
 export default function Registration(props) {
   const [FullName, SetFullName] = useState('');
+  const [Designation, setDesignation] = useState(null);
+  const [gender, setGender] = useState(null);
   const [Email, SetEmail] = useState('');
   const [Password, setPassword] = useState('');
   const [Phone, setPhone] = useState('');
   const [functioncall, Setfunctioncall] = useState(false);
   const [imageData, setImageData] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [isFocus, setIsFocus] = useState(false);
 
   const CreateUser = async () => {
     Setfunctioncall(true);
@@ -37,7 +42,9 @@ export default function Registration(props) {
       Email != '' &&
       Password != '' &&
       Phone != '' &&
-      profile != null
+      profile != null &&
+      gender != null &&
+      Designation != null
     ) {
       auth()
         .createUserWithEmailAndPassword(Email, Password)
@@ -71,6 +78,9 @@ export default function Registration(props) {
       .doc(Email)
       .set({
         name: FullName,
+        gender: gender,
+        designation: Designation,
+        password: Password,
         Email: Email,
         mobile: Phone,
         profilePic: profile,
@@ -109,9 +119,107 @@ export default function Registration(props) {
       console.log(err);
     }
   };
+
+  const designationData = [
+    {label: 'Commissioner of Police  {C.P.}', value: 'C.P.'},
+    {label: 'Special Commissioner of Police   {Spl.C.P.}', value: 'Spl.C.P.'},
+    {label: 'Joint Commissioner of Police   {Jt. C.P.}', value: 'Jt. C.P.'},
+    {
+      label: 'Additional Commissioner of Police   {Addl. C.P.}',
+      value: 'Addl. C.P.',
+    },
+    {label: 'Deputy Commissioner of Police   {D.C.P.}', value: 'D.C.P.'},
+    {label: 'Assistant Commissioner of Police   {A.C.P.}', value: 'A.C.P.'},
+    {
+      label: 'Sr Police Inspector / Police Inspector   {Sr. P.I. / P.I.}',
+      value: 'Sr. P.I. / P.I.',
+    },
+    {label: 'Assistant Police Inspector   {A.P.I.}', value: 'A.P.I.'},
+    {label: 'Police Sub Inspector   {P.S.I.}', value: 'P.S.I.'},
+    {label: 'Assistant Police Sub Inspector', value: 'A.S.I.'},
+    {label: 'Head Constable   {A.S.I.}', value: 'H.C.'},
+    {label: 'Police Naik   {P.N.}', value: 'P.N.'},
+    {label: 'Police Constable   {P.C.}', value: 'P.C.'},
+  ];
+  const genderData = [
+    {label: 'Male', value: 'Male'},
+    {label: 'Female', value: 'female'},
+    {label: 'Not say', value: 'Not say'},
+  ];
+
+  const renderGenderItem = item => {
+    return (
+      <View style={styles.item}>
+        <Text style={styles.textItem}>{item.label}</Text>
+      </View>
+    );
+  };
+  const renderItem = item => {
+    return (
+      <View style={styles.item}>
+        <Text style={styles.textItem}>{item.label}</Text>
+        {item.value === Designation && (
+          <Icon
+            name="police-badge-outline"
+            style={{
+              fontSize: 25,
+            }}
+          />
+        )}
+      </View>
+    );
+  };
   return (
-    <ScrollView>
-      <View style={{marginTop: 70}}>
+    <ScrollView style={{backgroundColor: '#fff'}}>
+      <StatusBar
+        backgroundColor="#fff"
+        barStyle={'dark-content'}
+        animated={true}
+      />
+      <View style={{marginTop: 30}}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <TouchableOpacity
+            style={{
+              width: 80,
+              height: 80,
+              borderWidth: 0.5,
+              borderRadius: 40,
+              backgroundColor: '#FFF',
+              marginHorizontal: 20,
+              borderColor: '#0275d8',
+            }}
+            onPress={() => {
+              imageUploadViaFile();
+            }}>
+            {imageData === null ? (
+              <Image
+                style={{flex: 1, borderRadius: 40}}
+                source={{
+                  uri: 'https://www.seekpng.com/png/small/41-410093_circled-user-icon-user-profile-icon-png.png',
+                }}
+              />
+            ) : (
+              <Image
+                style={{flex: 1, borderRadius: 40}}
+                source={{uri: imageData}}
+              />
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {functioncall && profile === null ? (
+          <View style={{width: '90%', marginTop: 10}}>
+            <Text style={{textAlign: 'center', color: 'red'}}>
+              Please enter your Profile pic
+            </Text>
+          </View>
+        ) : null}
+
         <Text
           style={{
             fontSize: 40,
@@ -131,12 +239,6 @@ export default function Registration(props) {
           alignItems: 'center',
           marginTop: 30,
         }}>
-        {imageData !== null ? (
-          <Image
-            source={{uri: imageData}}
-            style={{width: 70, height: 70, borderRadius: 10}}
-          />
-        ) : null}
         <View
           style={{
             flexDirection: 'row',
@@ -171,6 +273,84 @@ export default function Registration(props) {
           <View style={{width: '90%', marginBottom: 10}}>
             <Text style={{textAlign: 'left', color: 'red'}}>
               Please enter your name
+            </Text>
+          </View>
+        ) : null}
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '90%',
+            borderWidth: 1,
+            borderColor: '#0275d8',
+            borderRadius: 10,
+            marginBottom: 10,
+          }}>
+          <Dropdown
+            style={styles.dropdown}
+            placeholderStyle={styles.placeholderStyle}
+            selectedTextStyle={styles.selectedTextStyle}
+            inputSearchStyle={styles.inputSearchStyle}
+            iconStyle={styles.iconStyle}
+            data={designationData}
+            search
+            maxHeight={300}
+            labelField="label"
+            valueField="value"
+            placeholder="Select Designation"
+            searchPlaceholder="Search Designation"
+            value={Designation}
+            onChange={item => {
+              setDesignation(item.value);
+            }}
+            renderItem={renderItem}
+          />
+        </View>
+        {functioncall && Designation === null ? (
+          <View style={{width: '90%', marginBottom: 10}}>
+            <Text style={{textAlign: 'left', color: 'red'}}>
+              Please select your Designation
+            </Text>
+          </View>
+        ) : null}
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '90%',
+            borderWidth: 1,
+            borderColor: '#0275d8',
+            borderRadius: 10,
+            marginBottom: 10,
+          }}>
+          <Dropdown
+            style={styles.dropdown}
+            placeholderStyle={styles.placeholderStyle}
+            selectedTextStyle={styles.selectedTextStyle}
+            inputSearchStyle={styles.inputSearchStyle}
+            iconStyle={styles.iconStyle}
+            data={genderData}
+            search
+            maxHeight={300}
+            labelField="label"
+            valueField="value"
+            placeholder="Select Gender"
+            searchPlaceholder="Search Gender"
+            value={gender}
+            onChange={item => {
+              setGender(item.value);
+            }}
+            renderItem={renderGenderItem}
+          />
+        </View>
+        {functioncall && gender === null ? (
+          <View style={{width: '90%', marginBottom: 10}}>
+            <Text style={{textAlign: 'left', color: 'red'}}>
+              Please select your gender
             </Text>
           </View>
         ) : null}
@@ -313,116 +493,10 @@ export default function Registration(props) {
 
       <View
         style={{
-          flex: 1,
-          flexBasis: 'row',
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginTop: 30,
-        }}>
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 10,
-          }}>
-          <TouchableOpacity
-            style={{
-              width: 100,
-              height: 50,
-              borderWidth: 0.5,
-              borderRadius: 10,
-              flex: 1,
-              flexDirection: 'row',
-              justifyContent: 'center',
-              backgroundColor: '#FFF',
-              marginHorizontal: 20,
-              borderColor: '#0275d8',
-            }}
-            onPress={() => {
-              openCamera();
-            }}>
-            <Text
-              style={{
-                flex: 1,
-                textAlign: 'center',
-                textAlignVertical: 'center',
-                color: '#0275d8',
-                fontSize: 16,
-              }}>
-              Open camera
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              width: 100,
-              height: 50,
-              borderWidth: 0.5,
-              borderRadius: 10,
-              flex: 1,
-              flexDirection: 'row',
-              justifyContent: 'center',
-              backgroundColor: '#FFF',
-              marginHorizontal: 20,
-              borderColor: '#0275d8',
-            }}
-            onPress={() => {
-              imageUploadViaFile();
-            }}>
-            <Text
-              style={{
-                flex: 1,
-                textAlign: 'center',
-                textAlignVertical: 'center',
-                color: '#0275d8',
-                fontSize: 16,
-              }}>
-              Open File
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* <TouchableOpacity
-          style={{
-            width: 200,
-            height: 50,
-            borderWidth: 0.5,
-            borderRadius: 10,
-            flex: 1,
-            flexDirection: 'row',
-            justifyContent: 'center',
-            backgroundColor: '#0275d8',
-          }}
-          onPress={() => {
-            uploadfile();
-          }}>
-          <Text
-            style={{
-              flex: 1,
-              textAlign: 'center',
-              textAlignVertical: 'center',
-              color: '#fff',
-              fontSize: 16,
-            }}>
-            upload pic
-          </Text>
-        </TouchableOpacity> */}
-        {functioncall && profile === null ? (
-          <View style={{width: '90%', marginTop: 10}}>
-            <Text style={{textAlign: 'center', color: 'red'}}>
-              Please enter your Profile pic
-            </Text>
-          </View>
-        ) : null}
-      </View>
-
-      <View
-        style={{
           flexDirection: 'row',
           justifyContent: 'center',
-          marginTop: 100,
-          marginBottom: 50,
+          marginTop: 30,
+          marginBottom: 10,
         }}>
         <Text style={{fontSize: 16}}>Already have an account ?</Text>
         <TouchableOpacity onPress={() => props.navigation.navigate('Login')}>
@@ -433,4 +507,51 @@ export default function Registration(props) {
   );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  dropdown: {
+    // margin: 5,
+    height: 60,
+    // backgroundColor: 'white',
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+
+    // elevation: 2,
+    flex: 1,
+  },
+  icon: {
+    marginRight: 5,
+  },
+  item: {
+    padding: 17,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  textItem: {
+    flex: 1,
+    fontSize: 16,
+  },
+  placeholderStyle: {
+    fontSize: 15,
+    flex: 1,
+    marginRight: 10,
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
+  },
+});

@@ -1,76 +1,7 @@
-// import {
-//   StyleSheet,
-//   Text,
-//   TouchableOpacity,
-//   TouchableOpacityComponent,
-//   View,
-// } from 'react-native';
-// import React, {useEffect} from 'react';
-// import {NavigationContainer} from '@react-navigation/native';
-// import {createNativeStackNavigator} from '@react-navigation/native-stack';
-// import firestore from '@react-native-firebase/firestore';
-
-// export default function HomeScreen({route}) {
-//   const userEmail = route.params.userEmail;
-//   console.log(userEmail);
-
-//   const fetchData = () => {
-//     firestore()
-//       .collection('users')
-//       .doc(userEmail)
-//       .get()
-//       .then(documentSnapshot => {
-//         console.log('User exists: ', documentSnapshot.exists);
-
-//         if (documentSnapshot.exists) {
-//           console.log('User data: ', documentSnapshot.data());
-//         }
-//       });
-//   };
-
-//   useEffect(() => {
-//     fetchData();
-//   }, []);
-//   return (
-//     <View style={{alignItems: 'center'}}>
-//       <Text
-//         style={{
-//           marginTop: 70,
-//           color: '#000',
-//           fontSize: 40,
-//           fontWeight: 'bold',
-//         }}>
-//         Welcome Home !!! {userEmail}
-//       </Text>
-//       <TouchableOpacity
-//         style={{
-//           width: 100,
-//           backgroundColor: '#0275d8',
-//           height: 50,
-//           borderRadius: 10,
-//           paddingTop: 10,
-//           marginTop: 20,
-//         }}
-//         onPress={() => props.navigation.navigate('Login')}>
-//         <Text
-//           style={{
-//             color: '#fff',
-//             fontSize: 20,
-//             textAlign: 'center',
-//             textAlignVertical: 'center',
-//           }}>
-//           Sign Out
-//         </Text>
-//       </TouchableOpacity>
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({});
-
 import React, {useState, useEffect} from 'react';
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 export default function HomeScreen({route, navigation}) {
   const userEmail = route.params.userEmail;
@@ -94,21 +25,54 @@ export default function HomeScreen({route, navigation}) {
   }, []);
   return (
     <View style={styles.container}>
-      {userData && (
-        <>
-          <Image
-            source={{uri: userData.profilePic}}
-            style={styles.profileImage}
+      <View style={styles.userContent}>
+        {userData && (
+          <>
+            <Image
+              source={{uri: userData.profilePic}}
+              style={styles.profileImage}
+            />
+            <View style={{marginRight: 20}}>
+              <Text style={styles.nameText}>{userData.name}</Text>
+              <Text style={styles.emailText}>{userData.Email}</Text>
+            </View>
+          </>
+        )}
+        <TouchableOpacity
+          style={styles.signOutButton}
+          onPress={() => navigation.navigate('Login')}>
+          <Text style={styles.signOutText}>Sign Out</Text>
+        </TouchableOpacity>
+      </View>
+      <View
+        style={{
+          flex: 1,
+          flexDirection: 'row',
+          alignItems: 'flex-end',
+          justifyContent: 'flex-end',
+        }}>
+        <TouchableOpacity
+          style={{
+            backgroundColor: '#0275d8',
+            height: 50,
+            width: 50,
+            borderRadius: 20,
+            margin: 10,
+            padding: 10,
+          }}
+          onPress={() => navigation.navigate('CP')}>
+          <AntDesign
+            name="adduser"
+            style={{
+              color: '#fff',
+              fontSize: 30,
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           />
-          <Text style={styles.nameText}>{userData.name}</Text>
-          <Text style={styles.emailText}>{userData.Email}</Text>
-        </>
-      )}
-      <TouchableOpacity
-        style={styles.signOutButton}
-        onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.signOutText}>Sign Out</Text>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -116,33 +80,38 @@ export default function HomeScreen({route, navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
+  },
+  userContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
+    margin: 20,
   },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
   nameText: {
-    marginTop: 20,
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   emailText: {
-    fontSize: 18,
+    fontSize: 16,
     color: 'gray',
   },
   signOutButton: {
-    marginTop: 20,
+    width: 80,
+    height: 40,
     backgroundColor: '#0275d8',
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 5,
     borderRadius: 10,
   },
   signOutText: {
     color: '#fff',
-    fontSize: 20,
+    fontSize: 16,
     textAlign: 'center',
   },
 });
